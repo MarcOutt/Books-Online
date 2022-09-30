@@ -23,10 +23,36 @@ def nettoyer_url(u):
     return u.replace("../../../", "/")
 
 
-def extraire_infos_livre(u):
+def initialisation_bs(u):
     # initialisation de BS
     response = requests.get(u)
     soup = BeautifulSoup(response.text, "html.parser")
+    return soup
+
+
+def lire_fichier_csv():
+    with open(DATA_FILE, 'r', encoding="utf-8") as csv_file:
+        csv_reader = csv.reader(csv_file)
+        for line in csv_reader:
+            print(line)
+
+
+def enregistrer_fichier_csv(liste_livres):
+    liste = liste_livres[1]
+    header = []
+    for key in liste["infos_livre"].keys():
+        header.append(key)
+
+    with open(DATA_FILE, 'a', newline="", encoding="utf-8") as csv_file:
+        writer = csv.DictWriter(csv_file, fieldnames=header)
+        writer.writeheader()
+        for livre in liste_livres:
+            infos = livre["infos_livre"]
+            writer.writerow(infos)
+
+
+def extraire_infos_livre(u):
+    soup = initialisation_bs(u)
 
     # récupérer le titre
     titre = soup.find("h1").text
@@ -81,40 +107,22 @@ def extraire_infos_livre(u):
     number_review = product_info_td[6].text
 
     livre = {
+        "title": titre,
+        "category": category,
         "image_url": img_src,
         "review_rating": review_rating,
         "product_description": product_description,
-        "title": titre,
         "universal_product_code": universal_product_code,
         "price_including_tax": price_including_tax_clean,
         "price_excluding_tax": price_excluding_tax_clean,
         "number_available": number_available,
-        "category": category,
         "number_review": number_review
     }
-
-    header = []
-    for key in livre.keys():
-        header.append(key)
-
-    with open(DATA_FILE, 'a', newline="", encoding="utf-8") as csv_file:
-        writer = csv.DictWriter(csv_file, fieldnames=header)
-        writer.writeheader()
-        writer.writerow(livre)
-
-    with open(DATA_FILE, 'r', encoding="utf-8") as csv_file:
-        csv_reader = csv.reader(csv_file)
-        for line in csv_reader:
-            print(line)
     return livre
 
 
 def extraire_liste_livres(u):
-    # initialisation de BS
-    response = requests.get(u)
-    soup = BeautifulSoup(response.text, "html.parser")
-
-    ul_pager = soup.find("ul", class_="pager")
+    soup = initialisation_bs(u)
     section_livre = soup.find("section")
     ol_livres = section_livre.find("ol", class_="row")
     li_livres = ol_livres.find_all("li")
@@ -125,7 +133,6 @@ def extraire_liste_livres(u):
         livre_li = div_img_container.find("a")
         href = livre_li["href"]
         href_nettoye = nettoyer_url(href)
-        print(href_nettoye)
         livre_url = BASE_URL + href_nettoye
 
         # récupérer les infos du livre
@@ -133,20 +140,24 @@ def extraire_liste_livres(u):
 
         # ajout des éléments dans une liste
         liste.append({"infos_livre": infos_livre})
+    return liste
 
+
+def get_page_category_url(u):
+    soup = initialisation_bs(u)
     section = soup.find("section")
     li = section.find("li", class_="next")
     a = li.find("a")
     next_page = a["href"]
     print(next_page)
     if next_page:
-        url = u.replace("index.html", f"{next_page}")
-        extraire_infos_livre(url)
-
-    return liste
+        ur = u.replace("index.html", f"{next_page}")
+        extraire_infos_livre(ur)
+        return ur
 
 
 url = "http://books.toscrape.com/catalogue/category/books/historical-fiction_4/index.html"
 
 liste_livres = extraire_liste_livres(url)
-print(liste_livres)
+
+livres_enregistres = enregistrer_fichier_csv(liste_livres)
