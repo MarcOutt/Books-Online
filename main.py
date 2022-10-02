@@ -37,8 +37,8 @@ def lire_fichier_csv():
             print(line)
 
 
-def enregistrer_fichier_csv(liste_livres):
-    liste = liste_livres[1]
+def enregistrer_fichier_csv(livres):
+    liste = livres[1]
     header = []
     for key in liste["infos_livre"].keys():
         header.append(key)
@@ -46,7 +46,7 @@ def enregistrer_fichier_csv(liste_livres):
     with open(DATA_FILE, 'a', newline="", encoding="utf-8") as csv_file:
         writer = csv.DictWriter(csv_file, fieldnames=header)
         writer.writeheader()
-        for livre in liste_livres:
+        for livre in livres:
             infos = livre["infos_livre"]
             writer.writerow(infos)
 
@@ -143,21 +143,30 @@ def extraire_liste_livres(u):
     return liste
 
 
+def livre(u):
+    liste = extraire_liste_livres(u)
+    print(liste)
+    page_suivante = get_page_category_url(u)
+    if page_suivante:
+        liste_page = extraire_liste_livres(page_suivante)
+        liste_final = liste + liste_page
+        return liste_final
+    return liste
+
+
 def get_page_category_url(u):
     soup = initialisation_bs(u)
     section = soup.find("section")
     li = section.find("li", class_="next")
-    a = li.find("a")
-    next_page = a["href"]
-    print(next_page)
-    if next_page:
+    if li:
+        a = li.find("a")
+        next_page = a["href"]
         ur = u.replace("index.html", f"{next_page}")
-        extraire_infos_livre(ur)
         return ur
 
 
-url = "http://books.toscrape.com/catalogue/category/books/historical-fiction_4/index.html"
+url = "http://books.toscrape.com/catalogue/category/books/mystery_3/index.html"
 
-liste_livres = extraire_liste_livres(url)
+liste_livres = livre(url)
 
 livres_enregistres = enregistrer_fichier_csv(liste_livres)
