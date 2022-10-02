@@ -142,31 +142,27 @@ def extraire_liste_livres(u):
         liste.append({"infos_livre": infos_livre})
     return liste
 
+def scrape_page(url, liste):
+    print("URL: " + url)
 
-def livre(u):
-    liste = extraire_liste_livres(u)
+    soup = initialisation_bs(url)
+    livres = extraire_liste_livres(url)
+    liste = liste + livres
     print(liste)
-    page_suivante = get_page_category_url(u)
-    if page_suivante:
-        liste_page = extraire_liste_livres(page_suivante)
-        liste_final = liste + liste_page
-        return liste_final
-    return liste
-
-
-def get_page_category_url(u):
-    soup = initialisation_bs(u)
     section = soup.find("section")
     li = section.find("li", class_="next")
-    if li:
+    if li is not None:
         a = li.find("a")
-        next_page = a["href"]
-        ur = u.replace("index.html", f"{next_page}")
-        return ur
+        href = a["href"]
+        u = url.split("/")[-1]
+        url2 = url.replace(u, "")
+        page_suivante = url2 + href
+        scrape_page(page_suivante, liste)
+    else:
+        enregistrer_fichier_csv(liste)
 
 
+liste = []
 url = "http://books.toscrape.com/catalogue/category/books/mystery_3/index.html"
 
-liste_livres = livre(url)
-
-livres_enregistres = enregistrer_fichier_csv(liste_livres)
+liste_livres = scrape_page(url, liste)
