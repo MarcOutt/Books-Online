@@ -56,6 +56,7 @@ def extraire_infos_livre(u):
 
     # récupérer le titre
     titre = soup.find("h1").text
+    print(titre)
 
     # catégorie livre
     ul_breadcrumb = soup.find("ul", class_="breadcrumb")
@@ -78,8 +79,11 @@ def extraire_infos_livre(u):
 
     # description du livre
     article_product_page = soup.find("article", class_="product_page")
-    product_description = article_product_page.find("p", recursive=False).text
-
+    product_description = article_product_page.find("p", recursive=False)
+    if product_description:
+        product_description = article_product_page.find("p", recursive=False).text
+    else:
+        product_description = "non renseignée"
     # url image
     div_item = soup.find("div", class_="item")
     img_item = div_item.find("img")
@@ -144,11 +148,9 @@ def extraire_liste_livres(u):
 
 def scrape_page(url, liste):
     print("URL: " + url)
-
     soup = initialisation_bs(url)
     livres = extraire_liste_livres(url)
     liste = liste + livres
-    print(liste)
     section = soup.find("section")
     li = section.find("li", class_="next")
     if li is not None:
@@ -163,6 +165,6 @@ def scrape_page(url, liste):
 
 
 liste = []
-url = "http://books.toscrape.com/catalogue/category/books/mystery_3/index.html"
+url = "http://books.toscrape.com/catalogue/category/books/default_15/index.html"
 
 liste_livres = scrape_page(url, liste)
