@@ -4,12 +4,11 @@
 #                                                        #
 ##########################################################
 
-import os
-
 import requests
 from bs4 import BeautifulSoup
 import csv
 from pathlib import Path
+from tqdm import tqdm
 
 CUR_DIR = Path.cwd()
 
@@ -23,6 +22,16 @@ def nettoyer_text(t):
 
 def nettoyer_url(url):
     return url.replace("../../../", "")
+
+
+def recuperer_image(url, dossier, titre):
+    response = requests.get(url)
+    titre_nettoye = ''.join(filter(str.isalnum, titre))
+    nom_de_fichier = titre_nettoye + ".jpg"
+    fichier = dossier / nom_de_fichier
+    if response.status_code == 200:
+        with open(fichier, 'wb') as f:
+            f.write(response.content)
 
 
 def initialisation_bs(url):
@@ -40,8 +49,10 @@ def lire_fichier_csv(datafile):
 
 
 def enregistrer_fichier_csv(livres, datafile):
-    print("enregistre livre")
-    liste = livres[1]
+    try:
+        liste = livres[1]
+    except IndexError:
+        liste = livres[0]
     header = []
     for key in liste["infos_livre"].keys():
         header.append(key)
@@ -54,7 +65,7 @@ def enregistrer_fichier_csv(livres, datafile):
             writer.writerow(infos)
 
 
-def extraire_infos_livre(url):
+def extraire_infos_livre(url, dossier_categorie):
     soup = initialisation_bs(url)
     # récupérer le titre
     titre = soup.find("h1").text
@@ -89,6 +100,8 @@ def extraire_infos_livre(url):
     div_item = soup.find("div", class_="item")
     img_item = div_item.find("img")
     img_src = img_item["src"]
+    img_url = BASE_URL + img_src
+    recuperer_image(img_url, dossier_categorie, titre)
 
     # récupérer infos livre
     product_info = soup.find("table", class_="table table-striped")
@@ -114,7 +127,7 @@ def extraire_infos_livre(url):
     livre = {
         "title": titre,
         "category": category,
-        "image_url": img_src,
+        "image_url": img_url,
         "review_rating": review_rating,
         "product_description": product_description,
         "universal_product_code": universal_product_code,
@@ -132,6 +145,11 @@ def extraire_liste_livres(url, categorie):
     ol_livres = section_livre.find("ol", class_="row")
     li_livres = ol_livres.find_all("li")
     liste = []
+    dossier_categorie = Path.cwd() / categorie
+    try:
+        dossier_categorie.mkdir()
+    except FileExistsError:
+        print("dossier déjà existant")
     for li in li_livres:
         # récupérer l'url du livre
         div_img_container = li.find("div", class_="image_container")
@@ -141,7 +159,7 @@ def extraire_liste_livres(url, categorie):
         livre_url = CATALOGUE_URL + href_nettoye
 
         # récupérer les infos du livre
-        infos_livre = extraire_infos_livre(livre_url)
+        infos_livre = extraire_infos_livre(livre_url, dossier_categorie)
 
         # ajout des éléments dans une liste
         liste.append({"infos_livre": infos_livre})
@@ -149,11 +167,13 @@ def extraire_liste_livres(url, categorie):
 
 
 def scrape_page(url, liste, categorie):
+
     soup = initialisation_bs(url)
     livres = extraire_liste_livres(url, categorie)
     liste = liste + livres
     section = soup.find("section")
     li_next = section.find("li", class_="next")
+
     if li_next is not None:
         a = li_next.find("a")
         href = a["href"]
@@ -165,12 +185,10 @@ def scrape_page(url, liste, categorie):
         fichier_csv = categorie + ".csv"
         data_file = CUR_DIR / fichier_csv
         data_file.touch()
-        print(data_file)
         enregistrer_fichier_csv(liste, data_file)
 
 
 def extraire_url_categories(url):
-    print(url)
     soup = initialisation_bs(url)
     div_container_fluid = soup.find("div", class_="container-fluid")
     div_side_categories = div_container_fluid.find("div", class_="side_categories")
@@ -179,13 +197,16 @@ def extraire_url_categories(url):
     li = ul.find_all("li")
     for categorie in li:
         a = categorie.find("a")
-        titre = a.text
-        titre_nettoye = titre.replace(' ', "")
-        titre_nettoye2 = titre_nettoye.replace('\n', "")
+        categorie = a.text
+        categorie_nettoye = categorie.replace(' ', "")
+        categorie_nettoye2 = categorie_nettoye.replace('\n', "")
         href = a["href"]
         lien = BASE_URL + href
-        categorie_scraper = scrape_page(lien, liste, titre_nettoye2)
 
+        for i in tqdm(range(0, len(li)), disable=False,
+                      desc="Téléchargement des livres par catégorie"):
+            categorie_scraper = scrape_page(lien, liste, categorie_nettoye2)
+    print("Téléchargement terminé")
 
 liste = []
 url = "http://books.toscrape.com/index.html"
