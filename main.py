@@ -9,41 +9,44 @@ import os
 import requests
 from bs4 import BeautifulSoup
 import csv
+from pathlib import Path
 
-CUR_DIR = os.path.dirname(__file__)
-DATA_FILE = os.path.join(CUR_DIR, "infos_livre.csv")
-BASE_URL = "http://books.toscrape.com/catalogue/"
+CUR_DIR = Path.cwd()
+
+BASE_URL = "http://books.toscrape.com/"
+CATALOGUE_URL = "http://books.toscrape.com/catalogue/"
 
 
 def nettoyer_text(t):
     return t.replace("Â£", "£")
 
 
-def nettoyer_url(u):
-    return u.replace("../../../", "/")
+def nettoyer_url(url):
+    return url.replace("../../../", "")
 
 
-def initialisation_bs(u):
+def initialisation_bs(url):
     # initialisation de BS
-    response = requests.get(u)
+    response = requests.get(url)
     soup = BeautifulSoup(response.text, "html.parser")
     return soup
 
 
-def lire_fichier_csv():
-    with open(DATA_FILE, 'r', encoding="utf-8") as csv_file:
+def lire_fichier_csv(datafile):
+    with open(datafile, 'r', encoding="utf-8") as csv_file:
         csv_reader = csv.reader(csv_file)
         for line in csv_reader:
             print(line)
 
 
-def enregistrer_fichier_csv(livres):
+def enregistrer_fichier_csv(livres, datafile):
+    print("enregistre livre")
     liste = livres[1]
     header = []
     for key in liste["infos_livre"].keys():
         header.append(key)
 
-    with open(DATA_FILE, 'a', newline="", encoding="utf-8") as csv_file:
+    with open(datafile, 'a', newline="", encoding="utf-8") as csv_file:
         writer = csv.DictWriter(csv_file, fieldnames=header)
         writer.writeheader()
         for livre in livres:
@@ -51,12 +54,10 @@ def enregistrer_fichier_csv(livres):
             writer.writerow(infos)
 
 
-def extraire_infos_livre(u):
-    soup = initialisation_bs(u)
-
+def extraire_infos_livre(url):
+    soup = initialisation_bs(url)
     # récupérer le titre
     titre = soup.find("h1").text
-    print(titre)
 
     # catégorie livre
     ul_breadcrumb = soup.find("ul", class_="breadcrumb")
@@ -125,8 +126,8 @@ def extraire_infos_livre(u):
     return livre
 
 
-def extraire_liste_livres(u):
-    soup = initialisation_bs(u)
+def extraire_liste_livres(url, categorie):
+    soup = initialisation_bs(url)
     section_livre = soup.find("section")
     ol_livres = section_livre.find("ol", class_="row")
     li_livres = ol_livres.find_all("li")
@@ -137,7 +138,7 @@ def extraire_liste_livres(u):
         livre_li = div_img_container.find("a")
         href = livre_li["href"]
         href_nettoye = nettoyer_url(href)
-        livre_url = BASE_URL + href_nettoye
+        livre_url = CATALOGUE_URL + href_nettoye
 
         # récupérer les infos du livre
         infos_livre = extraire_infos_livre(livre_url)
@@ -146,25 +147,46 @@ def extraire_liste_livres(u):
         liste.append({"infos_livre": infos_livre})
     return liste
 
-def scrape_page(url, liste):
-    print("URL: " + url)
+
+def scrape_page(url, liste, categorie):
     soup = initialisation_bs(url)
-    livres = extraire_liste_livres(url)
+    livres = extraire_liste_livres(url, categorie)
     liste = liste + livres
     section = soup.find("section")
-    li = section.find("li", class_="next")
-    if li is not None:
-        a = li.find("a")
+    li_next = section.find("li", class_="next")
+    if li_next is not None:
+        a = li_next.find("a")
         href = a["href"]
         u = url.split("/")[-1]
         url2 = url.replace(u, "")
         page_suivante = url2 + href
-        scrape_page(page_suivante, liste)
+        return scrape_page(page_suivante, liste, categorie)
     else:
-        enregistrer_fichier_csv(liste)
+        fichier_csv = categorie + ".csv"
+        data_file = CUR_DIR / fichier_csv
+        data_file.touch()
+        print(data_file)
+        enregistrer_fichier_csv(liste, data_file)
+
+
+def extraire_url_categories(url):
+    print(url)
+    soup = initialisation_bs(url)
+    div_container_fluid = soup.find("div", class_="container-fluid")
+    div_side_categories = div_container_fluid.find("div", class_="side_categories")
+    ul_nav = div_side_categories.find("ul", class_="nav")
+    ul = ul_nav.find("ul")
+    li = ul.find_all("li")
+    for categorie in li:
+        a = categorie.find("a")
+        titre = a.text
+        titre_nettoye = titre.replace(' ', "")
+        titre_nettoye2 = titre_nettoye.replace('\n', "")
+        href = a["href"]
+        lien = BASE_URL + href
+        categorie_scraper = scrape_page(lien, liste, titre_nettoye2)
 
 
 liste = []
-url = "http://books.toscrape.com/catalogue/category/books/default_15/index.html"
-
-liste_livres = scrape_page(url, liste)
+url = "http://books.toscrape.com/index.html"
+u = extraire_url_categories(BASE_URL)
