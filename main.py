@@ -3,70 +3,135 @@
 #                      BOOKS ONLINE                      #
 #                                                        #
 ##########################################################
+import shutil
 
 import requests
 from bs4 import BeautifulSoup
 import csv
 from pathlib import Path
-from tqdm import tqdm
-
-CUR_DIR = Path.cwd()
 
 BASE_URL = "http://books.toscrape.com/"
 CATALOGUE_URL = "http://books.toscrape.com/catalogue/"
 
 
-def nettoyer_text(t):
-    return t.replace("Â£", "£")
+def nettoyer_text(texte):
+    """ Permet d'interpreter le symbole de la livre'
+
+    Args:
+        texte : texte à nettoyer
+
+    Returns:
+        str : texte nettoyé
+
+    """
+    return texte.replace("Â£", "£")
 
 
 def nettoyer_url(url):
+    """ Permet de supprimer les points et les slash en trop
+
+    Args:
+        url : url récupérée sur le site
+
+    Returns:
+        str : url nettoyée
+    """
     return url.replace("../../../", "")
 
 
-def recuperer_image(url, dossier, titre):
-    response = requests.get(url)
-    titre_nettoye = ''.join(filter(str.isalnum, titre))
-    nom_de_fichier = titre_nettoye + ".jpg"
-    fichier = dossier / nom_de_fichier
+def creation_fichier_principal():
+    dossier_books_to_scraps = Path.cwd() / "Books_to_scraps"
+    try:
+        dossier_books_to_scraps.mkdir()
+    except FileExistsError:
+        print("")
+    return dossier_books_to_scraps
+
+
+def zip_dossier():
+    filename = "books_to_scraps"
+    format = "zip"
+    directory = dossier_principal
+    shutil.make_archive(filename, format, directory)
+    print("Formatage du dossier complété")
+
+
+def recuperer_image(url_image, dossier_categorie, titre_du_livre):
+    """ Permet de récupérer les images des livres
+
+    Args:
+        url_image : url récupéré sur le site
+        dossier_categorie: dossier catégorie
+        titre_du_livre : titre du livre
+
+    Returns:
+            rien
+    """
+
+    response = requests.get(url_image)
+    titre_du_livre_nettoye = ''.join(filter(str.isalnum, titre_du_livre))
+    nom_du_fichier = titre_du_livre_nettoye + ".jpg"
+    dossier_image = dossier_categorie / nom_du_fichier
     if response.status_code == 200:
-        with open(fichier, 'wb') as f:
+        with open(dossier_image, 'wb') as f:
             f.write(response.content)
 
 
-def initialisation_bs(url):
-    # initialisation de BS
-    response = requests.get(url)
+def initialisation_bs(url_site):
+    """ Initialisation de beautifulSoup
+
+    Args:
+        url_site : url_site
+
+    Returns :
+            soup : initialisation de bs4
+
+    """
+    response = requests.get(url_site)
     soup = BeautifulSoup(response.text, "html.parser")
     return soup
 
 
-def lire_fichier_csv(datafile):
-    with open(datafile, 'r', encoding="utf-8") as csv_file:
-        csv_reader = csv.reader(csv_file)
-        for line in csv_reader:
-            print(line)
+def enregistrer_fichier_csv(livres, fichier_csv):
+    """ enregistre les infos des livres dans un fichier csv
 
+    Args:
+        livres : liste des livres
+        fichier_csv: fichier_csv
 
-def enregistrer_fichier_csv(livres, datafile):
+    Returns:
+            rien
+    """
+
     try:
-        liste = livres[1]
+        liste_livres = livres[1]
     except IndexError:
-        liste = livres[0]
+        liste_livres = livres[0]
     header = []
-    for key in liste["infos_livre"].keys():
+    for key in liste_livres["infos_livre"].keys():
         header.append(key)
 
-    with open(datafile, 'a', newline="", encoding="utf-8") as csv_file:
+    with open(fichier_csv, 'a', newline="", encoding="utf-8") as csv_file:
         writer = csv.DictWriter(csv_file, fieldnames=header)
         writer.writeheader()
         for livre in livres:
-            infos = livre["infos_livre"]
-            writer.writerow(infos)
+            infos_livre = livre["infos_livre"]
+            writer.writerow(infos_livre)
+    print("Téléchargement de la catégorie => terminé")
+    print()
 
 
-def extraire_infos_livre(url, dossier_categorie):
-    soup = initialisation_bs(url)
+def extraire_infos_livre(url_livre, dossier_categorie):
+    """ extrait les infos des livres
+
+    Args:
+        url_livre : url d un livre
+        dossier_categorie : dossier correspondant à la catégorie du livre
+
+    Returns:
+            livres :  la liste des infos des livres
+    """
+    soup = initialisation_bs(url_livre)
     # récupérer le titre
     titre = soup.find("h1").text
 
@@ -124,7 +189,7 @@ def extraire_infos_livre(url, dossier_categorie):
     # review
     number_review = product_info_td[6].text
 
-    livre = {
+    infos_livre = {
         "title": titre,
         "category": category,
         "image_url": img_url,
@@ -136,20 +201,30 @@ def extraire_infos_livre(url, dossier_categorie):
         "number_available": number_available,
         "number_review": number_review
     }
-    return livre
+    return infos_livre
 
 
-def extraire_liste_livres(url, categorie):
-    soup = initialisation_bs(url)
+def extraire_liste_livres(url_categorie, categorie):
+    """ extrait la liste des livres
+
+    Args:
+        url_categorie : url des catégories
+        categorie: nom de la catégorie
+
+    Returns:
+        liste : toute la liste et les infos des livres d'une catégorie
+
+    """
+    soup = initialisation_bs(url_categorie)
     section_livre = soup.find("section")
     ol_livres = section_livre.find("ol", class_="row")
     li_livres = ol_livres.find_all("li")
     liste = []
-    dossier_categorie = Path.cwd() / categorie
+    dossier_categorie = dossier_principal / categorie
     try:
         dossier_categorie.mkdir()
     except FileExistsError:
-        print("dossier déjà existant")
+        a = "déjà existant"
     for li in li_livres:
         # récupérer l'url du livre
         div_img_container = li.find("div", class_="image_container")
@@ -167,7 +242,17 @@ def extraire_liste_livres(url, categorie):
 
 
 def scrape_page(url, liste, categorie):
+    """
 
+    Args:
+        url: url catégorie
+        liste: liste des infos des livres
+        categorie: nom de la catégorie
+
+    Returns:
+        scrape_page: récursif pour ajouter les autres catégories au scrapping
+
+    """
     soup = initialisation_bs(url)
     livres = extraire_liste_livres(url, categorie)
     liste = liste + livres
@@ -183,31 +268,75 @@ def scrape_page(url, liste, categorie):
         return scrape_page(page_suivante, liste, categorie)
     else:
         fichier_csv = categorie + ".csv"
-        data_file = CUR_DIR / fichier_csv
+        data_file = dossier_principal / fichier_csv
         data_file.touch()
         enregistrer_fichier_csv(liste, data_file)
 
 
 def extraire_url_categories(url):
+    """ permet de récupérer les urls des catégories
+
+    Args:
+        url: url accueil du site
+
+    Returns:
+        rien
+    """
     soup = initialisation_bs(url)
     div_container_fluid = soup.find("div", class_="container-fluid")
     div_side_categories = div_container_fluid.find("div", class_="side_categories")
     ul_nav = div_side_categories.find("ul", class_="nav")
     ul = ul_nav.find("ul")
     li = ul.find_all("li")
+
     for categorie in li:
         a = categorie.find("a")
         categorie = a.text
         categorie_nettoye = categorie.replace(' ', "")
-        categorie_nettoye2 = categorie_nettoye.replace('\n', "")
+        categorie_nettoye_2 = categorie_nettoye.replace('\n', "")
         href = a["href"]
         lien = BASE_URL + href
-
-        for i in tqdm(range(0, len(li)), disable=False,
-                      desc="Téléchargement des livres par catégorie"):
-            categorie_scraper = scrape_page(lien, liste, categorie_nettoye2)
+        print("Téléchargement de la catégorie: " + categorie_nettoye_2)
+        categorie_scraper = scrape_page(lien, liste, categorie_nettoye_2)
     print("Téléchargement terminé")
 
+
+def menu_principal():
+    """ choix pour lancer les programmes
+
+    Returns:
+            rien
+    """
+    print(""" 
+
+            SYSTEME DE SURVEILLANCE DES PRIX
+
+                        MENU
+
+        1 - EXTRAIRE LES LIVRES PAR CATEGORIE
+        2 - CREER UN DOSSIER ZIP DE L'EXTRACTION
+        3 - QUITTER L'APPLICATION
+
+        """)
+
+    user = input("Veuillez faire votre choix: ")
+    try:
+        user_int = int(user)
+        if user_int == 1:
+            extraire_url_categories(BASE_URL)
+            menu_principal()
+        elif user_int == 2:
+            zip_dossier()
+            menu_principal()
+        elif user_int == 3:
+            print("Au revoir")
+            exit()
+        else:
+            print("Veuillez entrer un nombre entre 1 et 3")
+    except ValueError:
+        print("Veuillez mettre un nombre entre 1 et 3")
+
+
 liste = []
-url = "http://books.toscrape.com/index.html"
-u = extraire_url_categories(BASE_URL)
+dossier_principal = creation_fichier_principal()
+menu_principal()
