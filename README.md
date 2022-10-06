@@ -1,9 +1,9 @@
 
-# Utilisez les bases de Python pour l'analyse de marché / OC_p2
+# UTILISEZ LES BASES DE PYTHON POUR L'ANALYSE DE MARCHE / OC_p2
 ---------------------------------------------------------------
 
 
-## Table des matières
+## TABLE DES MATIERES
 ---------------------
 
 * Introduction
@@ -13,19 +13,19 @@
 * Utilisation
 
 
-## Introduction
+### INTRODUCTION
 ---------------
 
 * Le programme est un système de surveillance des prix des livres sur le Books to Scrape.
 * Il permet de récupérer differentes informations concernant les livres d'une catégorie.
 
 
-## Configuration requise
+#### CONFIGURATION REQUISE
 ------------------------
 * Ce programme n'a pas besoin de module spécifique
 
 
-### Installation
+##### INSTALLATION
 ----------------
 
 * Télécharger python 3
@@ -40,13 +40,13 @@
 * Le programme peut être utilisé
 
 
-### CONFIGURATION
+###### CONFIGURATION
 -----------------
 
 * Ce programme n'a pas d'option modifiable et ni de configuration spécial.
 
 
-#### UTILISATION
+####### UTILISATION
 ----------------
 
 * Lancer le programme
