@@ -14,7 +14,7 @@
 
 
 ### INTRODUCTION
----------------
+----------------
 
 * Le programme est un système de surveillance des prix des livres sur le Books to Scrape.
 * Il permet de récupérer differentes informations concernant les livres d'une catégorie.
@@ -27,7 +27,7 @@
 
 
 ##### INSTALLATION
-----------------
+------------------
 
 * Télécharger python 3
 * Installer python 3 
@@ -42,13 +42,13 @@
 
 
 ###### CONFIGURATION
------------------
+--------------------
 
 * Ce programme n'a pas d'option modifiable et ni de configuration spécial.
 
 
 ####### UTILISATION
-----------------
+-------------------
 
 * Lancer le programme
 * Faire un choix parmi: 1/ Extraire les livres par catégorie    2/ Créer un dossier zip de l'exctraction    3/ Quitter l'application
