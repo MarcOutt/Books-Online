@@ -13,20 +13,20 @@
 * Utilisation
 
 
-### INTRODUCTION
+## INTRODUCTION
 ----------------
 
 * Le programme est un système de surveillance des prix des livres sur le Books to Scrape.
 * Il permet de récupérer differentes informations concernant les livres d'une catégorie.
 
 
-#### CONFIGURATION REQUISE
+## CONFIGURATION REQUISE
 --------------------------
 
 * Ce programme n'a pas besoin de module spécifique
 
 
-##### INSTALLATION
+## INSTALLATION
 ------------------
 
 * Télécharger python 3
@@ -41,13 +41,13 @@
 * Le programme peut être utilisé
 
 
-###### CONFIGURATION
+## CONFIGURATION
 --------------------
 
 * Ce programme n'a pas d'option modifiable et ni de configuration spécial.
 
 
-####### UTILISATION
+## UTILISATION
 -------------------
 
 * Lancer le programme
