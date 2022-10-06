@@ -21,7 +21,8 @@
 
 
 #### CONFIGURATION REQUISE
-------------------------
+--------------------------
+
 * Ce programme n'a pas besoin de module spécifique
 
 
