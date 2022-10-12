@@ -1,4 +1,5 @@
-# Ignore les fichiers suivant
-/.env
-/.idea
-/mail
+# Ignore les dossier suivant
+/.env/
+/.idea/
+/mail/
+/Books_scraps/
