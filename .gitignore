@@ -1,4 +1,4 @@
-Books_to_scraps
-Mail
+# Ignore les fichiers suivant
 .env
 .idea
+mail
