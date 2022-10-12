@@ -28,7 +28,7 @@ def nettoyer_text(texte):
 
 
 def nettoyer_url(url):
-    """ Permet de supprimer les points et les slash en trop
+    """ Permet de supprimer les points et les slashs en trop
 
     Args:
         url : url récupérée sur le site
@@ -117,19 +117,18 @@ def enregistrer_fichier_csv(livres, fichier_csv):
         for livre in livres:
             infos_livre = livre["infos_livre"]
             writer.writerow(infos_livre)
-    print("Téléchargement de la catégorie => terminé")
-    print()
+    print("Téléchargement de la catégorie => terminé\n")
 
 
 def extraire_infos_livre(url_livre, dossier_categorie):
     """ extrait les infos des livres
 
     Args:
-        url_livre : url d un livre
+        url_livre : url d'un livre
         dossier_categorie : dossier correspondant à la catégorie du livre
 
     Returns:
-            livres :  la liste des infos des livres
+            livres : la liste des infos des livres
     """
     soup = initialisation_bs(url_livre)
     # récupérer le titre
@@ -221,10 +220,8 @@ def extraire_liste_livres(url_categorie, categorie):
     li_livres = ol_livres.find_all("li")
     liste = []
     dossier_categorie = dossier_principal / categorie
-    try:
+    if dossier_categorie.is_file():
         dossier_categorie.mkdir()
-    except FileExistsError:
-        a = "déjà existant"
     for li in li_livres:
         # récupérer l'url du livre
         div_img_container = li.find("div", class_="image_container")
@@ -255,7 +252,7 @@ def scrape_page(url, liste, categorie):
     """
     soup = initialisation_bs(url)
     livres = extraire_liste_livres(url, categorie)
-    liste = liste + livres
+    liste += livres
     section = soup.find("section")
     li_next = section.find("li", class_="next")
 
