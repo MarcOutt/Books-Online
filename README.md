@@ -31,13 +31,13 @@
 
 * Télécharger python 3
 * Installer python 3 
-* Ouvrir 
+* Ouvrir l'invite de commande
 * Créer un dossier au nom de l'application avec mkdir
 * Créer votre environnement virtuel avec python3.xx -m venv .env
 * Sourcer cette environnement virtuel avec avec source .env/Scripts/activate
 * Installer la configuration à l'aide du fichier requirements.txt avec pip3 install -r requirements.txt
 * Ajouter le fichier main dans le dossier créer
-* Le programme peut être utilisé
+* Le programme peut être lancé
 
 
 ## CONFIGURATION
