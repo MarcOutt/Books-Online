@@ -220,7 +220,7 @@ def extraire_liste_livres(url_categorie, categorie):
     li_livres = ol_livres.find_all("li")
     liste = []
     dossier_categorie = dossier_principal / categorie
-    if dossier_categorie.is_file():
+    if not dossier_categorie.is_file():
         dossier_categorie.mkdir()
     for li in li_livres:
         # récupérer l'url du livre
