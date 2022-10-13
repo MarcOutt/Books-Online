@@ -41,10 +41,8 @@ def nettoyer_url(url):
 
 def creation_fichier_principal():
     dossier_books_to_scraps = Path.cwd() / "Books_to_scraps"
-    try:
+    if not Path(dossier_books_to_scraps).exists():
         dossier_books_to_scraps.mkdir()
-    except FileExistsError:
-        print("")
     return dossier_books_to_scraps
 
 
@@ -220,8 +218,9 @@ def extraire_liste_livres(url_categorie, categorie):
     li_livres = ol_livres.find_all("li")
     liste = []
     dossier_categorie = dossier_principal / categorie
-    if not dossier_categorie.is_file():
+    if not Path(dossier_categorie).exists():
         dossier_categorie.mkdir()
+
     for li in li_livres:
         # récupérer l'url du livre
         div_img_container = li.find("div", class_="image_container")
@@ -293,7 +292,7 @@ def extraire_url_categories(url):
         categorie_nettoye_2 = categorie_nettoye.replace('\n', "")
         href = a["href"]
         lien = BASE_URL + href
-        print("Téléchargement de la catégorie: " + categorie_nettoye_2)
+        print("Téléchargement en cours de la catégorie: " + categorie_nettoye_2)
         categorie_scraper = scrape_page(lien, liste, categorie_nettoye_2)
     print("Téléchargement terminé")
 
