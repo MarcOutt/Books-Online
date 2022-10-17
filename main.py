@@ -3,6 +3,7 @@
 #                      BOOKS ONLINE                      #
 #                                                        #
 ##########################################################
+import codecs
 import shutil
 
 import requests
@@ -77,7 +78,7 @@ def initialisation_bs(url_site):
     """
     response = requests.get(url_site)
     response.encoding = 'utf-8'
-    html_content = response.text
+    html_content = response.content
     soup = BeautifulSoup(html_content, "html.parser")
     return soup
 
@@ -99,7 +100,7 @@ def enregistrer_fichier_csv(livres, fichier_csv):
     for key in liste_livres["infos_livre"].keys():
         header.append(key)
 
-    with open(fichier_csv, 'a', newline="", encoding="utf-8") as csv_file:
+    with codecs.open(fichier_csv, 'a', encoding="utf-8") as csv_file:
         writer = csv.DictWriter(csv_file, fieldnames=header)
         writer.writeheader()
         for livre in livres:
