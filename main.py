@@ -16,23 +16,18 @@ CATALOGUE_URL = "http://books.toscrape.com/catalogue/"
 
 def nettoyer_text(texte):
     """ Permet d'interpreter le symbole de la livre'
-
     Args:
         texte : texte à nettoyer
-
     Returns:
         str : texte nettoyé
-
     """
     return texte.replace("Â£", "£")
 
 
 def nettoyer_url(url):
     """ Permet de supprimer les points et les slashs en trop
-
     Args:
         url : url récupérée sur le site
-
     Returns:
         str : url nettoyée
     """
@@ -56,12 +51,10 @@ def zip_dossier():
 
 def recuperer_image(url_image, dossier_categorie, titre_du_livre):
     """ Permet de récupérer les images des livres
-
     Args:
         url_image : url récupéré sur le site
         dossier_categorie: dossier catégorie
         titre_du_livre : titre du livre
-
     Returns:
             rien
     """
@@ -77,26 +70,23 @@ def recuperer_image(url_image, dossier_categorie, titre_du_livre):
 
 def initialisation_bs(url_site):
     """ Initialisation de beautifulSoup
-
     Args:
         url_site : url_site
-
     Returns :
             soup : initialisation de bs4
-
     """
     response = requests.get(url_site)
-    soup = BeautifulSoup(response.text, "html.parser")
+    response.encoding = 'utf-8'
+    html_content = response.text
+    soup = BeautifulSoup(html_content, "html.parser")
     return soup
 
 
 def enregistrer_fichier_csv(livres, fichier_csv):
     """ enregistre les infos des livres dans un fichier csv
-
     Args:
         livres : liste des livres
         fichier_csv: fichier_csv
-
     Returns:
             rien
     """
@@ -120,11 +110,9 @@ def enregistrer_fichier_csv(livres, fichier_csv):
 
 def extraire_infos_livre(url_livre, dossier_categorie):
     """ extrait les infos des livres
-
     Args:
         url_livre : url d'un livre
         dossier_categorie : dossier correspondant à la catégorie du livre
-
     Returns:
             livres : la liste des infos des livres
     """
@@ -203,14 +191,11 @@ def extraire_infos_livre(url_livre, dossier_categorie):
 
 def extraire_liste_livres(url_categorie, categorie):
     """ extrait la liste des livres
-
     Args:
         url_categorie : url des catégories
         categorie: nom de la catégorie
-
     Returns:
         liste : toute la liste et les infos des livres d'une catégorie
-
     """
     soup = initialisation_bs(url_categorie)
     section_livre = soup.find("section")
@@ -239,15 +224,12 @@ def extraire_liste_livres(url_categorie, categorie):
 
 def scrape_page(url, liste, categorie):
     """
-
     Args:
         url: url catégorie
         liste: liste des infos des livres
         categorie: nom de la catégorie
-
     Returns:
         scrape_page: récursif pour ajouter les autres catégories au scrapping
-
     """
     soup = initialisation_bs(url)
     livres = extraire_liste_livres(url, categorie)
@@ -271,10 +253,8 @@ def scrape_page(url, liste, categorie):
 
 def extraire_url_categories(url):
     """ permet de récupérer les urls des catégories
-
     Args:
         url: url accueil du site
-
     Returns:
         rien
     """
@@ -299,20 +279,15 @@ def extraire_url_categories(url):
 
 def menu_principal():
     """ choix pour lancer les programmes
-
     Returns:
             rien
     """
     print(""" 
-
             SYSTEME DE SURVEILLANCE DES PRIX
-
                         MENU
-
         1 - EXTRAIRE LES LIVRES PAR CATEGORIE
         2 - CREER UN DOSSIER ZIP DE L'EXTRACTION
         3 - QUITTER L'APPLICATION
-
         """)
 
     user = input("Veuillez faire votre choix: ")
