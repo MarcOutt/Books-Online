@@ -1,6 +1,6 @@
 [![forthebadge](https://forthebadge.com/images/badges/made-with-python.svg)](https://forthebadge.com)
 
-![Python Version](https://img.shields.io/badge/Python-3.7-blue.svg)![BeautifulSoup Version](https://img.shields.io/badge/BeautifulSoup-4.9-green.svg)![Requests Version](https://img.shields.io/badge/Requests-2.25.1-orange.svg)
+![Python Version](https://img.shields.io/badge/Python-3.7-blue.svg)![BeautifulSoup Version](https://img.shields.io/badge/BeautifulSoup-4.11-green.svg)![Requests Version](https://img.shields.io/badge/Requests-2.28.1-orange.svg)
 # Books Online - Système de Surveillance des Prix
 
 ## Table des matières
