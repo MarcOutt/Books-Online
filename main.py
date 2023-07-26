@@ -1,8 +1,3 @@
-##########################################################
-#                                                        #
-#                      BOOKS ONLINE                      #
-#                                                        #
-##########################################################
 import codecs
 import shutil
 
@@ -274,7 +269,7 @@ def extraire_url_categories(url):
         href = a["href"]
         lien = BASE_URL + href
         print("Téléchargement en cours de la catégorie: " + categorie_nettoye_2)
-        categorie_scraper = scrape_page(lien, liste, categorie_nettoye_2)
+        scrape_page(lien, liste, categorie_nettoye_2)
     print("Téléchargement terminé")
 
 
@@ -283,6 +278,21 @@ def menu_principal():
     Returns:
             rien
     """
+
+    print("""
+          __
+          HH
+          HH
+BBB       HH                                        ,z.
+=== .___. HH     %%%%                   .o.       ,zZZZ>
+BBB |   | HH 838 %%%% EEE    AAAAA     ,0X0'    ,zZZZ"
+BBB |<<<| HH 838 %%%% EEE ## DDDDD    ,0X0'   ,zZZZ"
+BBB | E | HH 838 %GR% +++ ## AAAAA   ,0X0'  ,zZZZ"
+BBB | M | HH 838 %GR% EEE ## <>  ,0X0' ,zZZZ"
+BBB | C | HH 838 %%%% EEE ## AAAAA ,0X0',zZZZ"HH$HHHHHHHDDHH$HH
+=== |<<<| HH 838 %%%% EEE ## AAAAA.0X0;zZZZ"  EE$EEEEEEEDDEE$EE
+BBB |___| HH 838 %%%% EEE ## AAAAA'"0' "Z"    HH$HHHHHHHDDHH$HH
+""")
     print(""" 
             SYSTEME DE SURVEILLANCE DES PRIX
                         MENU
