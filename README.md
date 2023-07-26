@@ -9,8 +9,6 @@
 * [Pré-requis](#pré-requis)
 * [Installation](#installation)
 * [Utilisation](#utilisation)
-* [Contribuer](#contribuer)
-* [License](#license)
 
 
 ## Introduction
