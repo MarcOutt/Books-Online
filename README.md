@@ -1,4 +1,4 @@
-[![forthebadge](https://forthebadge.com/images/badges/made-with-python.svg)](https://forthebadge.com)
+[![forthebadge](https://forthebadge.com/images/badges/made-with-python.svg)](https://forthebadge.com)![Python Version](https://img.shields.io/badge/Python-3.7-blue.svg)
 # Books Online - Système de Surveillance des Prix
 
 ## Table des matières
