@@ -87,5 +87,5 @@ pip install -r requirements.txt
 * Lancer votre environnement virtuel ( se reporter à la rubrique installation)
 * Rentrer le code suivant:
 `flake8`
-*Aller dans le dossier flake8-rapport
-Ouvrir le fichier index
+* Aller dans le dossier flake8-rapport
+* Ouvrir le fichier index
