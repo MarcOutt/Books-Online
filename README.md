@@ -1,4 +1,4 @@
-![Python Version](https://img.shields.io/badge/Python-3.7-blue.svg)![BeautifulSoup Version](https://img.shields.io/badge/BeautifulSoup-4.11-green.svg)![Requests Version](https://img.shields.io/badge/Requests-2.28.1-orange.svg)
+![Python Version](https://img.shields.io/badge/Python-3.7-blue.svg)![BeautifulSoup Version](https://img.shields.io/badge/BeautifulSoup-4.11-green.svg)![Requests Version](https://img.shields.io/badge/Requests-2.28.1-orange.svg)![Flake8](https://img.shields.io/badge/Flake8-Passing-brightgreen.svg)
 
 
 # Books Online - Système de Surveillance des Prix
