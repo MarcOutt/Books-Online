@@ -1,122 +1,147 @@
 import codecs
 import shutil
-
+import html
 import requests
 from bs4 import BeautifulSoup
 import csv
 from pathlib import Path
+from typing import List, Dict
+
+import menu
 
 BASE_URL = "http://books.toscrape.com/"
 CATALOGUE_URL = "http://books.toscrape.com/catalogue/"
 
 
-def nettoyer_text(texte):
-    """ Permet d'interpreter le symbole de la livre'
-    Args:
-        texte : texte à nettoyer
-    Returns:
-        str : texte nettoyé
+def clean_url(url: str) -> str:
     """
-    return texte.replace("Â£", "£")
+    Cleans a URL by removing the '../../../' substring.
 
-
-def nettoyer_url(url):
-    """ Permet de supprimer les points et les slashs en trop
     Args:
-        url : url récupérée sur le site
+        url (str): The URL to be cleaned.
+
     Returns:
-        str : url nettoyée
+        str: The cleaned URL.
     """
     return url.replace("../../../", "")
 
 
-def creation_fichier_principal():
-    dossier_books_to_scraps = Path.cwd() / "Books_to_scraps"
-    if not Path(dossier_books_to_scraps).exists():
-        dossier_books_to_scraps.mkdir()
-    return dossier_books_to_scraps
-
-
-def zip_dossier():
-    filename = "books_to_scraps"
-    format = "zip"
-    directory = dossier_principal
-    shutil.make_archive(filename, format, directory)
-    print("Formatage du dossier complété")
-
-
-def recuperer_image(url_image, dossier_categorie, titre_du_livre):
-    """ Permet de récupérer les images des livres
-    Args:
-        url_image : url récupéré sur le site
-        dossier_categorie: dossier catégorie
-        titre_du_livre : titre du livre
-    Returns:
-            rien
+def create_main_directory() -> Path:
     """
+       Creates a main directory named 'Books_to_scraps' if it doesn't already exist.
 
+       This function checks if the 'Books_to_scraps' directory exists in the current working directory.
+       If the directory doesn't exist, it creates it.
+
+       Returns:
+           Path: The path to the created or existing 'Books_to_scraps' directory.
+       """
+    main_directory = Path.cwd() / "Books_to_scraps"
+    if not Path(main_directory).exists():
+        main_directory.mkdir()
+    return main_directory
+
+
+def zip_folder() -> None:
+    """
+    Zips the main directory into a ZIP archive.
+
+    This function creates a ZIP archive of the 'Books_to_scraps' main directory.
+
+    Returns:
+        None
+    """
+    filename = "../Books_to_scraps"
+    archive_format = "zip"
+    directory = main_directory
+    shutil.make_archive(filename, archive_format, directory)
+    print("Folder formatting completed")
+
+
+def retrieve_image(url_image: str, category_directory: Path, book_title: str) -> None:
+    """
+    Retrieves an image from a URL and saves it in the specified category directory.
+
+    Args:
+        url_image (str): The URL of the image to retrieve.
+        category_directory (Path): The path to the directory for the book's category.
+        book_title (str): The title of the book.
+
+    Returns:
+        None
+    """
     response = requests.get(url_image)
-    titre_du_livre_nettoye = ''.join(filter(str.isalnum, titre_du_livre))
-    nom_du_fichier = titre_du_livre_nettoye + ".jpg"
-    dossier_image = dossier_categorie / nom_du_fichier
+    response.raise_for_status()
+    cleaned_book_title = ''.join(filter(str.isalnum, book_title))
+    file_name = cleaned_book_title + ".jpg"
+    image_path = category_directory / file_name
+
     if response.status_code == 200:
-        with open(dossier_image, 'wb') as f:
+        with open(image_path, 'wb') as f:
             f.write(response.content)
 
 
-def initialisation_bs(url_site):
-    """ Initialisation de beautifulSoup
+def initialize_bs(url_site: str) -> BeautifulSoup:
+    """
+    Initializes a BeautifulSoup object from a URL.
+
     Args:
-        url_site : url_site
-    Returns :
-            soup : initialisation de bs4
+        url_site (str): The URL of the website to initialize.
+
+    Returns:
+        BeautifulSoup: A BeautifulSoup object representing the parsed HTML content.
     """
     response = requests.get(url_site)
+    response.raise_for_status()
     response.encoding = 'utf-8'
     html_content = response.content
     soup = BeautifulSoup(html_content, "html.parser")
     return soup
 
 
-def enregistrer_fichier_csv(livres, fichier_csv):
-    """ enregistre les infos des livres dans un fichier csv
-    Args:
-        livres : liste des livres
-        fichier_csv: fichier_csv
-    Returns:
-            rien
+def save_csv_file(books: List[Dict[str, Dict[str, str]]], csv_file_path: Path) -> None:
     """
+    Saves book information to a CSV file.
 
+    Args:
+        books (List[Dict[str, Dict[str, str]]]): A list of dictionaries containing book information.
+        csv_file_path (str): The path to the CSV file to be created or appended.
+
+    Returns:
+        None
+    """
     try:
-        liste_livres = livres[1]
+        first_book = books[0]
+        print(first_book)
+        header = list(first_book["book_info"].keys())
     except IndexError:
-        liste_livres = livres[0]
-    header = []
-    for key in liste_livres["infos_livre"].keys():
-        header.append(key)
+        print("No books to save.")
+        return
 
-    with codecs.open(fichier_csv, 'a', encoding="utf-8") as csv_file:
+    with codecs.open(str(csv_file_path), 'a', encoding="utf-8") as csv_file:
         writer = csv.DictWriter(csv_file, fieldnames=header)
-        writer.writeheader()
-        for livre in livres:
-            infos_livre = livre["infos_livre"]
-            writer.writerow(infos_livre)
-    print("Téléchargement de la catégorie => terminé\n")
+        if csv_file.tell() == 0:  # Check if file is empty
+            writer.writeheader()
+        for book in books:
+            book_infos = book["book_info"]
+            writer.writerow(book_infos)
+    print("Category download => completed\n")
 
 
-def extraire_infos_livre(url_livre, dossier_categorie):
-    """ extrait les infos des livres
+def extract_book_info(book_url: str, category_folder: Path) -> dict:
+    """Extracts book information.
     Args:
-        url_livre : url d'un livre
-        dossier_categorie : dossier correspondant à la catégorie du livre
+        book_url (str): URL of a book.
+        category_folder (Path): Folder corresponding to the book's category.
     Returns:
-            livres : la liste des infos des livres
+        book_info (dict): Dictionary containing book information.
     """
-    soup = initialisation_bs(url_livre)
-    # récupérer le titre
-    titre = soup.find("h1").text
+    soup = initialize_bs(book_url)
 
-    # catégorie livre
+    # Get the title
+    title = soup.find("h1").text
+
+    # Book category
     ul_breadcrumb = soup.find("ul", class_="breadcrumb")
     ul_breadcrumb_li = ul_breadcrumb.find_all("a")
     category = ul_breadcrumb_li[2].text
@@ -135,43 +160,46 @@ def extraire_infos_livre(url_livre, dossier_categorie):
     if review_rating == div_col_product_main.find("p", class_="star-rating Five"):
         review_rating = "5 étoiles"
 
-    # description du livre
+    # Book description
     article_product_page = soup.find("article", class_="product_page")
     product_description = article_product_page.find("p", recursive=False)
     if product_description:
         product_description = article_product_page.find("p", recursive=False).text
     else:
-        product_description = "non renseignée"
-    # url image
+        product_description = "not provided"
+
+    # Image URL
     div_item = soup.find("div", class_="item")
     img_item = div_item.find("img")
     img_src = img_item["src"]
     img_url = BASE_URL + img_src
-    recuperer_image(img_url, dossier_categorie, titre)
+    retrieve_image(img_url, category_folder, title)
 
-    # récupérer infos livre
+    # Retrieve book information
     product_info = soup.find("table", class_="table table-striped")
     product_info_td = product_info.find_all("td")
 
     # UPC
     universal_product_code = product_info_td[0].text
 
-    # TVA
+
+    # VAT
     price_including_tax = product_info_td[3].text
-    price_including_tax_clean = nettoyer_text(price_including_tax)
+    price_including_tax_clean = html.unescape(price_including_tax)
 
-    # HT
+
+    # Excluding VAT
     price_excluding_tax = product_info_td[2].text
-    price_excluding_tax_clean = nettoyer_text(price_excluding_tax)
+    price_excluding_tax_clean = html.unescape(price_excluding_tax)
 
-    # disponibilité
+    # Availability
     number_available = product_info_td[5].text
 
-    # review
+    # Review count
     number_review = product_info_td[6].text
 
-    infos_livre = {
-        "title": titre,
+    book_info = {
+        "title": title,
         "category": category,
         "image_url": img_url,
         "review_rating": review_rating,
@@ -182,134 +210,120 @@ def extraire_infos_livre(url_livre, dossier_categorie):
         "number_available": number_available,
         "number_review": number_review
     }
-    return infos_livre
+    return book_info
 
 
-def extraire_liste_livres(url_categorie, categorie):
-    """ extrait la liste des livres
+def extract_book_list(category_url: str, category_name: str) -> list:
+    """
+    Extracts the list of books from a category.
+
     Args:
-        url_categorie : url des catégories
-        categorie: nom de la catégorie
+        category_url (str): URL of the category.
+        category_name (str): Name of the category.
+
     Returns:
-        liste : toute la liste et les infos des livres d'une catégorie
+        list: List containing book information for a category.
     """
-    soup = initialisation_bs(url_categorie)
-    section_livre = soup.find("section")
-    ol_livres = section_livre.find("ol", class_="row")
-    li_livres = ol_livres.find_all("li")
-    liste = []
-    dossier_categorie = dossier_principal / categorie
-    if not Path(dossier_categorie).exists():
-        dossier_categorie.mkdir()
+    soup = initialize_bs(category_url)
+    book_section = soup.find("section")
+    book_list_ol = book_section.find("ol", class_="row")
+    book_list_items = book_list_ol.find_all("li")
+    book_list = []
+    category_folder = main_directory / category_name
+    if not Path(category_folder).exists():
+        category_folder.mkdir()
 
-    for li in li_livres:
-        # récupérer l'url du livre
-        div_img_container = li.find("div", class_="image_container")
-        livre_li = div_img_container.find("a")
-        href = livre_li["href"]
-        href_nettoye = nettoyer_url(href)
-        livre_url = CATALOGUE_URL + href_nettoye
+    for item in book_list_items:
+        # Get the book's URL
+        img_container_div = item.find("div", class_="image_container")
+        book_link = img_container_div.find("a")
+        href = book_link["href"]
+        cleaned_href = clean_url(href)
+        book_url = CATALOGUE_URL + cleaned_href
 
-        # récupérer les infos du livre
-        infos_livre = extraire_infos_livre(livre_url, dossier_categorie)
+        # Extract book information
+        book_info = extract_book_info(book_url, category_folder)
 
-        # ajout des éléments dans une liste
-        liste.append({"infos_livre": infos_livre})
-    return liste
+        # Append the information to the list
+        book_list.append({"book_info": book_info})
+    return book_list
 
 
-def scrape_page(url, liste, categorie):
+def scrape_page(url: str, book_list: list, category: str) -> None:
     """
+    Scrapes books from a category's page.
+
     Args:
-        url: url catégorie
-        liste: liste des infos des livres
-        categorie: nom de la catégorie
+        url (str): URL of the category.
+        book_list (list): List of book information.
+        category (str): Category name.
+
     Returns:
-        scrape_page: récursif pour ajouter les autres catégories au scrapping
+        None
     """
-    soup = initialisation_bs(url)
-    livres = extraire_liste_livres(url, categorie)
-    liste += livres
+    soup = initialize_bs(url)
+    books = extract_book_list(url, category)
+    book_list += books
     section = soup.find("section")
-    li_next = section.find("li", class_="next")
+    next_li = section.find("li", class_="next")
 
-    if li_next is not None:
-        a = li_next.find("a")
+    if next_li is not None:
+        a = next_li.find("a")
         href = a["href"]
-        u = url.split("/")[-1]
-        url2 = url.replace(u, "")
-        page_suivante = url2 + href
-        return scrape_page(page_suivante, liste, categorie)
+        last_part = url.split("/")[-1]
+        url_without_last_part = url.replace(last_part, "")
+        next_page_url = url_without_last_part + href
+        scrape_page(next_page_url, book_list, category)
     else:
-        fichier_csv = categorie + ".csv"
-        data_file = dossier_principal / fichier_csv
-        data_file.touch()
-        enregistrer_fichier_csv(liste, data_file)
+        csv_filename = category + ".csv"
+        csv_file_path = main_directory / csv_filename
+        csv_file_path.touch()
+        save_csv_file(book_list, csv_file_path)
 
 
-def extraire_url_categories(url):
-    """ permet de récupérer les urls des catégories
-    Args:
-        url: url accueil du site
-    Returns:
-        rien
+def extract_category_urls(base_url: str) -> None:
     """
-    soup = initialisation_bs(url)
+    Extracts the URLs of categories.
+
+    Args:
+        base_url (str): Base URL of the website.
+
+    Returns:
+        None
+    """
+    soup = initialize_bs(base_url)
     div_container_fluid = soup.find("div", class_="container-fluid")
     div_side_categories = div_container_fluid.find("div", class_="side_categories")
     ul_nav = div_side_categories.find("ul", class_="nav")
     ul = ul_nav.find("ul")
-    li = ul.find_all("li")
+    li_list = ul.find_all("li")
 
-    for categorie in li:
-        a = categorie.find("a")
-        categorie = a.text
-        categorie_nettoye = categorie.replace(' ', "")
-        categorie_nettoye_2 = categorie_nettoye.replace('\n', "")
+    for category_item in li_list:
+        a = category_item.find("a")
+        category_name = a.text
+        cleaned_category_name = category_name.replace(' ', "")
+        cleaned_category_name_2 = cleaned_category_name.replace('\n', "")
         href = a["href"]
-        lien = BASE_URL + href
-        print("Téléchargement en cours de la catégorie: " + categorie_nettoye_2)
-        scrape_page(lien, liste, categorie_nettoye_2)
+        category_url = BASE_URL + href
+        print("Téléchargement en cours de la catégorie: " + cleaned_category_name_2)
+        scrape_page(category_url, book_list, cleaned_category_name_2)
     print("Téléchargement terminé")
 
 
-def menu_principal():
-    """ choix pour lancer les programmes
+def main_menu():
+    """ Main menu for launching programs.
     Returns:
-            rien
+            None
     """
-
-    print("""
-          __
-          HH
-          HH
-BBB       HH                                        ,z.
-=== .___. HH     %%%%                   .o.       ,zZZZ>
-BBB |   | HH 838 %%%% EEE    AAAAA     ,0X0'    ,zZZZ"
-BBB |<<<| HH 838 %%%% EEE ## DDDDD    ,0X0'   ,zZZZ"
-BBB | E | HH 838 %GR% +++ ## AAAAA   ,0X0'  ,zZZZ"
-BBB | M | HH 838 %GR% EEE ## <>  ,0X0' ,zZZZ"
-BBB | C | HH 838 %%%% EEE ## AAAAA ,0X0',zZZZ"HH$HHHHHHHDDHH$HH
-=== |<<<| HH 838 %%%% EEE ## AAAAA.0X0;zZZZ"  EE$EEEEEEEDDEE$EE
-BBB |___| HH 838 %%%% EEE ## AAAAA'"0' "Z"    HH$HHHHHHHDDHH$HH
-""")
-    print(""" 
-            SYSTEME DE SURVEILLANCE DES PRIX
-                        MENU
-        1 - EXTRAIRE LES LIVRES PAR CATEGORIE
-        2 - CREER UN DOSSIER ZIP DE L'EXTRACTION
-        3 - QUITTER L'APPLICATION
-        """)
-
     user = input("Veuillez faire votre choix: ")
     try:
         user_int = int(user)
         if user_int == 1:
-            extraire_url_categories(BASE_URL)
-            menu_principal()
+            extract_category_urls(BASE_URL)
+            main_menu()
         elif user_int == 2:
-            zip_dossier()
-            menu_principal()
+            zip_folder()
+            main_menu()
         elif user_int == 3:
             print("Au revoir")
             exit()
@@ -319,6 +333,7 @@ BBB |___| HH 838 %%%% EEE ## AAAAA'"0' "Z"    HH$HHHHHHHDDHH$HH
         print("Veuillez mettre un nombre entre 1 et 3")
 
 
-liste = []
-dossier_principal = creation_fichier_principal()
-menu_principal()
+book_list = []
+main_directory = create_main_directory()
+menu.display_menu()
+main_menu()
