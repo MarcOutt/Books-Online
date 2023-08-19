@@ -11,6 +11,9 @@
 * [Utilisation](#utilisation)
 
 
+![Menu de l'application](https://github.com/MarcOutt/OC_p2/blob/main/img.png)
+
+
 ## Introduction
 ----------------
 
