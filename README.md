@@ -3,6 +3,8 @@
 
 # Books Online - Système de Surveillance des Prix
 
+![books-online](https://github.com/MarcOutt/OC_p2/blob/main/books-online.png)
+
 ## Table des matières
 ---------------------
 
@@ -11,6 +13,7 @@
 * [Pré-requis](#pré-requis)
 * [Installation](#installation)
 * [Utilisation](#utilisation)
+* [Rapport Flake8](#Rapport-flake8)
 
 ## Introduction
 ----------------
