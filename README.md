@@ -1,6 +1,5 @@
 ![Python Version](https://img.shields.io/badge/Python-3.7-blue.svg)![BeautifulSoup Version](https://img.shields.io/badge/BeautifulSoup-4.11-green.svg)![Requests Version](https://img.shields.io/badge/Requests-2.28.1-orange.svg)
 
-![Menu de l'application](https://github.com/MarcOutt/OC_p2/blob/main/img.png)
 
 # Books Online - Système de Surveillance des Prix
 
@@ -77,3 +76,5 @@ pip install -r requirements.txt
 * Si vous choisissez l'option 1, un fichier CSV sera créé avec toutes les informations des livres à l'intérieur.
 * Si vous choisissez l'option 2, un fichier zip sera créé.
 * Si vous choisissez l'option 3, le programme s'arrêtera.
+
+![Menu de l'application](https://github.com/MarcOutt/OC_p2/blob/main/img.png)
