@@ -78,3 +78,11 @@ pip install -r requirements.txt
 * Si vous choisissez l'option 3, le programme s'arrêtera.
 
 ![Menu de l'application](https://github.com/MarcOutt/OC_p2/blob/main/img.png)
+
+## Rapport FLAKE8
+* Ouvrir l'invite de commande ( se reporter à la rubrique installation)
+* Lancer votre environnement virtuel ( se reporter à la rubrique installation)
+* Rentrer le code suivant:
+`flake8`
+*Aller dans le dossier flake8-rapport
+Ouvrir le fichier index
