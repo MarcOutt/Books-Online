@@ -182,11 +182,9 @@ def extract_book_info(book_url: str, category_folder: Path) -> dict:
     # UPC
     universal_product_code = product_info_td[0].text
 
-
     # VAT
     price_including_tax = product_info_td[3].text
     price_including_tax_clean = html.unescape(price_including_tax)
-
 
     # Excluding VAT
     price_excluding_tax = product_info_td[2].text

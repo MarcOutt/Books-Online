@@ -13,10 +13,8 @@ def display_menu():
     === |<<<| HH 838 %%%% EEE ## AAAAA.0X0;zZZZ"  EE$EEEEEEEDDEE$EE
     BBB |___| HH 838 %%%% EEE ## AAAAA'"0' "Z"    HH$HHHHHHHDDHH$HH
     """)
-    print(""" 
-            SYSTEME DE SURVEILLANCE DES PRIX
-                        MENU
+    print("""             SYSTEME DE SURVEILLANCE DES PRIX
+                           MENU
         1 - EXTRAIRE LES LIVRES PAR CATEGORIE
         2 - CREER UN DOSSIER ZIP DE L'EXTRACTION
-        3 - QUITTER L'APPLICATION
-        """)
+        3 - QUITTER L'APPLICATION""")
